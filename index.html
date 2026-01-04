@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>美業尊榮管理系統</title>
+  <title>美業尊榮管理系統 - 專業等級版</title>
   <style>
     :root {
       --bg-dark: #050505; --card-bg: #121212;
       --gold-light: #f1c40f; --gold-dark: #7a5c0d;
       --text-main: #e0e0e0; 
-      --btn-save: #00ff88; /* 翡翠綠 */
-      --btn-edit: #00d4ff; /* 寶石藍 */
-      --btn-hover-glow: rgba(241, 196, 15, 0.4);
+      --btn-save: #00ff88; 
+      --btn-edit: #00d4ff; 
+      --btn-delete: #ff4d4d; /* 紅寶石 */
     }
     
     body { 
@@ -20,30 +20,21 @@
       padding: 15px; display: flex; flex-direction: column; align-items: center; 
     }
     
-    /* 呼吸感容器 */
     .container { 
       width: 100%; max-width: 450px; background: var(--card-bg); 
       padding: 25px; border-radius: 28px; border: 1px solid var(--gold-dark);
       box-shadow: 0 0 20px rgba(0, 0, 0, 1);
-      transition: all 0.5s ease;
-    }
-    .container:hover {
-      box-shadow: 0 0 30px rgba(122, 92, 13, 0.3);
-      border-color: var(--gold-light);
     }
     
-    h1 { color: var(--gold-light); text-align: center; letter-spacing: 2px; text-shadow: 0 0 10px rgba(241, 196, 15, 0.3); }
+    h1 { color: var(--gold-light); text-align: center; letter-spacing: 2px; }
     
-    label { display: block; margin-top: 15px; font-size: 0.8rem; color: #888; text-transform: uppercase; }
+    label { display: block; margin-top: 15px; font-size: 0.8rem; color: #888; }
     
     input, select { 
       width: 100%; padding: 14px; margin-top: 8px; background: #1a1a1a; 
       border: 1px solid #333; border-radius: 12px; color: #fff; box-sizing: border-box; 
-      transition: all 0.3s;
     }
-    input:focus { border-color: var(--gold-light); outline: none; box-shadow: 0 0 10px rgba(241, 196, 15, 0.2); }
 
-    /* 單選按鈕奢華設計 */
     .transaction-type { display: flex; gap: 10px; margin-top: 20px; }
     .transaction-type label { 
       flex: 1; margin: 0; padding: 12px; background: #222; border-radius: 10px; 
@@ -52,62 +43,56 @@
     .transaction-type input { display: none; }
     .transaction-type label:has(input:checked) { border-color: var(--gold-light); background: #2d2d2d; color: var(--gold-light); }
 
-    /* 會呼吸的儲存按鈕 - 翡翠綠光譜 */
     .btn-save { 
       width: 100%; padding: 18px; border-radius: 16px; border: none; font-weight: bold; 
       background: linear-gradient(135deg, #008f4f, #00ff88); color: #000; 
       margin-top: 25px; cursor: pointer; font-size: 1.1rem;
-      box-shadow: 0 4px 15px rgba(0, 255, 136, 0.2);
       animation: breatheGreen 3s infinite ease-in-out;
     }
     @keyframes breatheGreen {
-      0%, 100% { box-shadow: 0 0 10px rgba(0, 255, 136, 0.2); transform: scale(1); }
-      50% { box-shadow: 0 0 25px rgba(0, 255, 136, 0.5); transform: scale(0.99); }
+      0%, 100% { box-shadow: 0 0 10px rgba(0, 255, 136, 0.2); }
+      50% { box-shadow: 0 0 25px rgba(0, 255, 136, 0.5); }
     }
 
-    /* 會員卡片 - 呼吸與懸停色彩 */
     .member-card { 
       background: #1a1a1a; padding: 20px; border-radius: 20px; margin-top: 18px; 
-      border: 1px solid #333; position: relative; overflow: hidden;
-      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      border: 1px solid #333; position: relative; transition: all 0.4s;
     }
-    .member-card:hover { 
-      transform: translateY(-5px); 
-      border-color: var(--gold-light);
-      box-shadow: 0 10px 25px rgba(241, 196, 15, 0.15);
-    }
+    .member-card:hover { border-color: var(--gold-light); transform: translateY(-5px); }
     
     .rank-badge { 
       position: absolute; right: 0; top: 0; background: var(--gold-light); 
       color: #000; padding: 5px 12px; border-radius: 0 0 0 15px; font-size: 0.75rem; font-weight: 900; 
     }
 
-    .balance-tag { font-size: 1.6rem; font-weight: 800; color: var(--gold-light); letter-spacing: -1px; }
+    .balance-tag { font-size: 1.6rem; font-weight: 800; color: var(--gold-light); }
 
-    /* 選取按鈕 - 寶石藍光譜 */
+    .btn-group { display: flex; gap: 10px; margin-top: 15px; }
+    
     .btn-edit {
-      margin-top: 15px; background: transparent; border: 1px solid #444; color: #aaa; 
-      width: 100%; cursor: pointer; padding: 10px; border-radius: 12px; font-size: 0.85rem;
-      transition: all 0.3s;
+      flex: 3; background: transparent; border: 1px solid #444; color: #aaa; 
+      cursor: pointer; padding: 10px; border-radius: 12px; transition: 0.3s;
     }
-    .btn-edit:hover { 
-      background: rgba(0, 212, 255, 0.1); border-color: var(--btn-edit); color: var(--btn-edit);
-      box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+    .btn-edit:hover { border-color: var(--btn-edit); color: var(--btn-edit); box-shadow: 0 0 10px rgba(0, 212, 255, 0.2); }
+
+    .btn-del {
+      flex: 1; background: transparent; border: 1px solid #444; color: #666; 
+      cursor: pointer; padding: 10px; border-radius: 12px; transition: 0.3s;
     }
+    .btn-del:hover { border-color: var(--btn-delete); color: var(--btn-delete); box-shadow: 0 0 10px rgba(255, 77, 77, 0.2); }
 
     .status-msg { 
       position: fixed; top: 20px; background: var(--btn-save); color: #000; 
       padding: 12px 30px; border-radius: 30px; display: none; z-index: 100; font-weight: bold;
-      box-shadow: 0 5px 20px rgba(0, 255, 136, 0.4);
     }
   </style>
 </head>
 <body>
 
-<div id="status" class="status-msg">已實時同步雲端</div>
+<div id="status" class="status-msg">同步成功</div>
 
 <div class="container">
-  <h1>尊榮會員管理系統</h1>
+  <h1>尊榮管理系統</h1>
   
   <form id="memberForm">
     <input type="hidden" id="memberId">
@@ -115,11 +100,13 @@
     <label>尊貴會員姓名</label>
     <input type="text" id="name" placeholder="請輸入姓名" required>
     
-    <label>專屬會員等級</label>
-    <select id="level">
-      <option value="VIP 尊爵">VIP 尊爵 (權重最高)</option>
-      <option value="白金金鑽">白金金鑽</option>
-      <option value="普通會員">普通會員</option>
+    <label>會員等級 (自動帶入儲值額)</label>
+    <select id="level" onchange="autoFillAmount()">
+      <option value="普通會員">普通會員 (金額自訂)</option>
+      <option value="VIP 尊爵">VIP 尊爵 (10萬)</option>
+      <option value="白金金鑽">白金金鑽 (5萬)</option>
+      <option value="黃金銀鑽">黃金銀鑽 (2萬)</option>
+      <option value="白銀銅鑽">白銀銅鑽 (2萬)</option>
     </select>
 
     <div class="transaction-type">
@@ -131,9 +118,9 @@
     <input type="number" id="amount" value="0" onclick="this.select()">
     
     <label>備註紀錄</label>
-    <input type="text" id="note" placeholder="如：儲值、護髮、產品購買">
+    <input type="text" id="note" placeholder="如：入會、洗剪、產品">
 
-    <button type="button" class="btn-save" onclick="handleSave()">✨ 提交並更新數據庫</button>
+    <button type="button" class="btn-save" onclick="handleSave()">✨ 提交數據</button>
   </form>
 
   <hr style="border:0; border-top:1px solid #222; margin: 35px 0;">
@@ -143,7 +130,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getDatabase, ref, push, onValue, update, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+  import { getDatabase, ref, push, onValue, update, get, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyC0hBN9TH3UJSOsx5XVyQ08f_2RUckvXYU",
@@ -159,10 +146,21 @@
   const db = getDatabase(app);
   const listDiv = document.getElementById('memberList');
 
-  // 本地快取
-  const cachedData = localStorage.getItem('hairSalonCache');
-  if (cachedData) renderList(JSON.parse(cachedData));
+  // 等級金額自動帶入
+  window.autoFillAmount = () => {
+    const level = document.getElementById('level').value;
+    const amountInput = document.getElementById('amount');
+    const prices = {
+      "VIP 尊爵": 100000,
+      "白金金鑽": 50000,
+      "黃金銀鑽": 20000,
+      "白銀銅鑽": 20000,
+      "普通會員": 0
+    };
+    amountInput.value = prices[level] || 0;
+  };
 
+  // 儲存與更新
   window.handleSave = async () => {
     const id = document.getElementById('memberId').value;
     const name = document.getElementById('name').value;
@@ -203,16 +201,27 @@
     } catch (e) { alert("錯誤：" + e.message); }
   };
 
+  // 刪除會員
+  window.deleteMember = async (id, name) => {
+    if (confirm(`確定要刪除會員 [ ${name} ] 嗎？此操作無法還原。`)) {
+      try {
+        await remove(ref(db, 'members/' + id));
+        showStatus("🗑️ 會員已刪除");
+      } catch (e) { alert("刪除失敗"); }
+    }
+  };
+
+  // 監聽雲端
   onValue(ref(db, 'members'), (snapshot) => {
     const data = snapshot.val();
-    if (!data) return;
+    if (!data) { listDiv.innerHTML = ''; return; }
     localStorage.setItem('hairSalonCache', JSON.stringify(data));
     renderList(data);
   });
 
   function renderList(data) {
     listDiv.innerHTML = '';
-    const weights = { "VIP 尊爵": 3, "白金金鑽": 2, "普通會員": 1 };
+    const weights = { "VIP 尊爵": 5, "白金金鑽": 4, "黃金銀鑽": 3, "白銀銅鑽": 2, "普通會員": 1 };
     const sorted = Object.entries(data).sort(([,a], [,b]) => {
       if (weights[b.level] !== weights[a.level]) return weights[b.level] - weights[a.level];
       return (b.balance || 0) - (a.balance || 0);
@@ -226,16 +235,13 @@
         <div style="color:var(--gold-light); font-weight:bold; font-size:1.2rem;">${m.name}</div>
         <div style="font-size:0.75rem; color:#666; margin-top:4px;">${m.level}</div>
         <div style="margin-top:15px;">
-          <span style="font-size:0.8rem; color:#888;">可用餘額</span><br>
+          <span style="font-size:0.8rem; color:#888;">餘額</span><br>
           <span class="balance-tag">$${m.balance || 0}</span>
         </div>
-        <div style="font-size:0.7rem; color:#555; margin-top:10px; border-top:1px solid #222; padding-top:10px;">
-          異動備註：${m.lastNote || '無'}<br>
-          <span style="color:#444;">更新時間：${new Date(m.lastUpdate).toLocaleString()}</span>
+        <div class="btn-group">
+          <button onclick="editMember('${id}', '${m.name}', '${m.level}')" class="btn-edit">操作</button>
+          <button onclick="deleteMember('${id}', '${m.name}')" class="btn-del">刪除</button>
         </div>
-        <button onclick="editMember('${id}', '${m.name}', '${m.level}')" class="btn-edit">
-          選取此會員進行操作
-        </button>
       `;
       listDiv.appendChild(card);
     });
@@ -257,4 +263,3 @@
 </script>
 </body>
 </html>
-
