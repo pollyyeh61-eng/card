@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>尊榮管理 - 手機號碼增強版</title>
+  <title>尊榮管理 - 手機建檔版</title>
   <style>
     :root {
       --bg-dark: #050505; --card-bg: #121212;
@@ -36,9 +36,7 @@
     .history-item-top { display: flex; justify-content: space-between; align-items: center; }
     
     .detail-box { display: none; background: #000; margin-top: 8px; padding: 10px; border-radius: 8px; border-left: 3px solid var(--gold-light); font-size: 0.75rem; color: #aaa; line-height: 1.5; }
-    .detail-box.show { display: block; animation: slideIn 0.3s ease-out; }
-
-    @keyframes slideIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+    .detail-box.show { display: block; }
 
     .btn-group { display: flex; gap: 8px; padding-top: 15px; }
     .btn-action { flex: 1; padding: 10px; border-radius: 10px; border: 1px solid #444; background: transparent; color: #888; cursor: pointer; }
@@ -54,13 +52,13 @@
   <form id="memberForm">
     <input type="hidden" id="memberId">
     
+    <label>手機號碼 (用於建立或搜尋檔案)</label>
+    <input type="tel" id="phone" placeholder="輸入手機號碼..." oninput="autoMatchMember()" autocomplete="off">
+    
     <label>會員姓名</label>
-    <input type="text" id="name" placeholder="輸入名字自動辨識..." oninput="autoMatchMember()" required autocomplete="off">
+    <input type="text" id="name" placeholder="輸入姓名..." oninput="autoMatchMember()" required autocomplete="off">
     
-    <label>手機號碼 (用於辨識)</label>
-    <input type="tel" id="phone" placeholder="輸入手機自動辨識..." oninput="autoMatchMember()" autocomplete="off">
-    
-    <label>等級</label>
+    <label>會員等級</label>
     <select id="level" onchange="autoFillAmount()">
       <option value="普通會員">普通會員</option>
       <option value="VIP 尊爵">VIP 尊爵</option>
@@ -74,17 +72,17 @@
       <label><input type="radio" name="transType" value="spend"> ✂️ 消費</label>
     </div>
 
-    <label>金額</label>
+    <label>本次金額</label>
     <input type="number" id="amount" value="0" onclick="this.select()">
     
-    <label>項目說明 (備註)</label>
+    <label>備註 (項目說明)</label>
     <input type="text" id="note" placeholder="項目說明">
     
-    <button type="button" class="btn-save" onclick="handleSave()">✨ 提交並儲存</button>
+    <button type="button" class="btn-save" onclick="handleSave()">✨ 建立/提交數據</button>
   </form>
 
   <hr style="border:0; border-top:1px solid #222; margin: 30px 0;">
-  <h2>📊 實時排行</h2>
+  <h2>📊 實時排行與檔案</h2>
   <div id="memberList"></div>
 </div>
 
@@ -106,12 +104,12 @@
   const db = getDatabase(app);
   let globalMembers = {};
 
-  // 1. 智慧雙向辨識 (姓名或手機)
+  // 1. 智慧匹配邏輯 (姓名或手機)
   window.autoMatchMember = () => {
-    const inputName = document.getElementById('name').value.trim();
     const inputPhone = document.getElementById('phone').value.trim();
+    const inputName = document.getElementById('name').value.trim();
     
-    // 優先以手機辨識，再以姓名辨識
+    // 優先匹配手機，其次姓名
     const matched = Object.entries(globalMembers).find(([id, m]) => 
       (inputPhone && m.phone === inputPhone) || (inputName && m.name === inputName)
     );
@@ -141,7 +139,7 @@
     const note = document.getElementById('note').value || "無備註";
     const type = document.querySelector('input[name="transType"]:checked').value;
     
-    if (!name) return alert("請輸入姓名");
+    if (!name || !phone) return alert("請務必輸入「姓名」與「手機號碼」以便建檔！");
 
     const dateFull = new Date().toLocaleString('zh-TW', {hour12:false});
     const dateShort = dateFull.split(' ')[0];
@@ -170,8 +168,8 @@
 
       document.getElementById('memberForm').reset();
       document.getElementById('memberId').value = '';
-      showStatus("💰 同步成功");
-    } catch (e) { alert("儲存失敗"); }
+      showStatus("✅ 會員檔案已同步");
+    } catch (e) { alert("系統錯誤，請檢查網路！"); }
   };
 
   onValue(ref(db, 'members'), (snapshot) => {
@@ -188,19 +186,19 @@
         <div class="card-header" onclick="toggleDrawer('${id}')">
           <div class="rank-badge">RANK ${index + 1}</div>
           <div style="color:var(--gold-light); font-weight:bold;">${m.name} <span style="font-size:0.75rem; color:#666; font-weight:normal;">| ${m.level}</span></div>
+          <div style="margin-top:5px; font-size:0.8rem; color:#888;">📱 ${m.phone}</div>
           <div style="margin-top:10px;"><span style="font-size:0.8rem; color:#888;">可用餘額</span><br><span class="balance-tag">$${m.balance || 0}</span></div>
         </div>
         <div class="drawer" id="drawer-${id}">
-          <div style="font-size:0.85rem; color:var(--gold-light); margin-bottom:12px; font-weight:bold;">📱 會員手機：${m.phone || '未設定'}</div>
-          <div style="font-size:0.85rem; color:var(--text-main); margin-bottom:12px; font-weight:bold;">📜 歷史明細 (點擊查看詳情)</div>
+          <div style="font-size:0.85rem; color:var(--gold-light); margin-bottom:12px; font-weight:bold;">📜 歷史交易 (點擊看備註)</div>
           ${(m.history || []).map((h, i) => `
             <div class="history-item" onclick="toggleDetail('${id}-${i}', event)">
               <div class="history-item-top">
                 <span>${h.date} <b style="color:${h.type==='儲值'?'#00ff88':'#ff4d4d'}">${h.type}</b></span>
-                <span>$${h.amount} ➔ <b style="color:#fff;">$${h.afterBalance}</b></span>
+                <span>$${h.amount} ➔ $${h.afterBalance}</span>
               </div>
               <div class="detail-box" id="detail-${id}-${i}">
-                <div style="color:var(--gold-light); margin-bottom:3px;">🕒 時間：${h.fullTime}</div>
+                <div style="color:var(--gold-light);">🕒 時間：${h.fullTime}</div>
                 <div>📝 項目：${h.note}</div>
               </div>
             </div>
@@ -217,7 +215,6 @@
 
   window.toggleDrawer = (id) => document.getElementById(`drawer-${id}`).classList.toggle('open');
   window.toggleDetail = (detailId, event) => { event.stopPropagation(); document.getElementById(`detail-${detailId}`).classList.toggle('show'); };
-
   window.editMember = (id) => {
     const m = globalMembers[id];
     document.getElementById('memberId').value = id;
@@ -226,7 +223,6 @@
     document.getElementById('level').value = m.level;
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
-
   window.deleteMember = async (id, n) => { if (confirm(`確定刪除 ${n}？`)) await remove(ref(db, 'members/' + id)); };
   function showStatus(msg) { const s = document.getElementById('status'); s.innerText = msg; s.style.display = 'block'; setTimeout(() => s.style.display = 'none', 3000); }
 </script>
