@@ -11,55 +11,41 @@
       --text-main: #e0e0e0; 
       --btn-save: #00ff88; --btn-edit: #00d4ff; --btn-delete: #ff4d4d;
     }
-    
     body { font-family: 'PingFang TC', sans-serif; background: var(--bg-dark); color: var(--text-main); padding: 15px; display: flex; flex-direction: column; align-items: center; }
     .container { width: 100%; max-width: 450px; background: var(--card-bg); padding: 25px; border-radius: 28px; border: 1px solid var(--gold-dark); box-shadow: 0 0 20px #000; }
     h1 { color: var(--gold-light); text-align: center; letter-spacing: 2px; }
-    
     label { display: block; margin-top: 15px; font-size: 0.8rem; color: #888; }
     input, select { width: 100%; padding: 14px; margin-top: 8px; background: #1a1a1a; border: 1px solid #333; border-radius: 12px; color: #fff; box-sizing: border-box; font-size: 1rem; }
-    
     #searchTip { font-size: 0.75rem; color: var(--btn-edit); margin-top: 5px; height: 1rem; display: block; }
-
     .transaction-type { display: flex; gap: 10px; margin-top: 20px; }
     .transaction-type label { flex: 1; padding: 12px; background: #222; border-radius: 10px; text-align: center; cursor: pointer; border: 1px solid transparent; }
     .transaction-type input { display: none; }
     .transaction-type label:has(input:checked) { border-color: var(--gold-light); color: var(--gold-light); background: #2d2d2d; }
-
-    .btn-save { width: 100%; padding: 18px; border-radius: 16px; border: none; font-weight: bold; background: linear-gradient(135deg, #008f4f, #00ff88); margin-top: 25px; cursor: pointer; font-size: 1.1rem; box-shadow: 0 0 15px rgba(0, 255, 136, 0.2); }
+    .btn-save { width: 100%; padding: 18px; border-radius: 16px; border: none; font-weight: bold; background: linear-gradient(135deg, #008f4f, #00ff88); margin-top: 25px; cursor: pointer; font-size: 1.1rem; }
 
     /* 卡片與抽屜 */
-    .member-card { background: #1a1a1a; border-radius: 20px; margin-top: 18px; border: 1px solid #333; overflow: hidden; }
-    .card-header { padding: 20px; cursor: pointer; position: relative; }
+    .member-card { background: #1a1a1a; border-radius: 20px; margin-top: 18px; border: 1px solid #333; overflow: hidden; position: relative; }
+    .card-header { padding: 20px; cursor: pointer; }
     .rank-badge { position: absolute; right: 0; top: 0; background: var(--gold-light); color: #000; padding: 5px 12px; border-radius: 0 0 0 15px; font-size: 0.7rem; font-weight: 900; }
     .balance-tag { font-size: 1.6rem; font-weight: 800; color: var(--gold-light); }
-
-    .drawer { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-out; background: #151515; }
-    .drawer.open { max-height: 600px; border-top: 1px solid #333; padding: 15px; overflow-y: auto; }
-
+    .drawer { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out; background: #151515; }
+    .drawer.open { max-height: 800px; border-top: 1px solid #333; padding: 15px; overflow-y: auto; }
     .history-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #222; font-size: 0.8rem; }
-    .history-type-dep { color: var(--btn-save); }
-    .history-type-spe { color: var(--btn-delete); }
-    
-    .btn-group { display: flex; gap: 8px; padding: 15px; background: #1a1a1a; }
-    .btn-action { flex: 1; padding: 10px; border-radius: 10px; border: 1px solid #444; background: transparent; color: #888; cursor: pointer; font-size: 0.8rem; }
-    .btn-action.edit:hover { border-color: var(--btn-edit); color: var(--btn-edit); }
-    .btn-action.del:hover { border-color: var(--btn-delete); color: var(--btn-delete); }
-
+    .btn-group { display: flex; gap: 8px; padding-top: 15px; }
+    .btn-action { flex: 1; padding: 10px; border-radius: 10px; border: 1px solid #444; background: transparent; color: #888; cursor: pointer; }
     .status-msg { position: fixed; top: 20px; background: var(--btn-save); color: #000; padding: 10px 30px; border-radius: 30px; display: none; z-index: 100; font-weight: bold; }
   </style>
 </head>
 <body>
 
-<div id="status" class="status-msg">已同步</div>
+<div id="status" class="status-msg">同步成功</div>
 
 <div class="container">
   <h1>會員管理系統</h1>
   <form id="memberForm">
     <input type="hidden" id="memberId">
-    
     <label>會員姓名</label>
-    <input type="text" id="name" placeholder="打入名字自動辨識..." oninput="autoMatchMember()" required autocomplete="off">
+    <input type="text" id="name" placeholder="輸入名字自動搜尋..." oninput="autoMatchMember()" required autocomplete="off">
     <span id="searchTip"></span>
     
     <label>等級 (白銀銅鑽 1萬)</label>
@@ -76,17 +62,17 @@
       <label><input type="radio" name="transType" value="spend"> ✂️ 消費</label>
     </div>
 
-    <label>本次金額</label>
+    <label>金額</label>
     <input type="number" id="amount" value="0" onclick="this.select()">
     
-    <label>項目備註</label>
-    <input type="text" id="note" placeholder="如：洗剪染燙、新會員入會">
+    <label>備註</label>
+    <input type="text" id="note" placeholder="項目說明">
     
-    <button type="button" class="btn-save" onclick="handleSave()">✨ 提交數據</button>
+    <button type="button" class="btn-save" onclick="handleSave()">✨ 提交並儲存</button>
   </form>
 
-  <hr style="border:0; border-top:1px solid #222; margin: 35px 0;">
-  <h2>📊 尊榮排行與歷史抽屜</h2>
+  <hr style="border:0; border-top:1px solid #222; margin: 30px 0;">
+  <h2>📊 實時排行</h2>
   <div id="memberList"></div>
 </div>
 
@@ -108,37 +94,31 @@
   const db = getDatabase(app);
   let globalMembers = {};
 
-  // --- 1. 智慧辨識邏輯 ---
+  // 1. 智慧辨識
   window.autoMatchMember = () => {
     const inputName = document.getElementById('name').value.trim();
     const tip = document.getElementById('searchTip');
     const levelSelect = document.getElementById('level');
     const idInput = document.getElementById('memberId');
-    
     if (!inputName) { tip.innerText = ""; idInput.value = ""; return; }
-
-    // 在現有清單中找尋名字完全相符的人
     const matched = Object.entries(globalMembers).find(([id, m]) => m.name === inputName);
-
     if (matched) {
       const [id, data] = matched;
       idInput.value = id;
       levelSelect.value = data.level;
-      tip.innerText = "✨ 已辨識老客戶：" + data.level;
-      // 老客戶預設金額為0，除非手動切換等級
+      tip.innerText = "✨ 老客戶：" + data.level;
     } else {
-      idInput.value = "";
-      tip.innerText = "";
+      idInput.value = ""; tip.innerText = "";
     }
   };
 
-  // 等級金額自動帶入 (針對新會員或切換等級時)
+  // 2. 自動帶入金額
   window.autoFillAmount = () => {
     const prices = { "VIP 尊爵": 100000, "白金金鑽": 50000, "黃金銀鑽": 20000, "白銀銅鑽": 10000, "普通會員": 0 };
     document.getElementById('amount').value = prices[document.getElementById('level').value] || 0;
   };
 
-  // 儲存邏輯
+  // 3. 儲存數據
   window.handleSave = async () => {
     const id = document.getElementById('memberId').value;
     const name = document.getElementById('name').value.trim();
@@ -146,11 +126,9 @@
     const amount = Number(document.getElementById('amount').value);
     const note = document.getElementById('note').value || "無備註";
     const type = document.querySelector('input[name="transType"]:checked').value;
-    
     if (!name) return alert("請輸入姓名");
 
     const dateStr = new Date().toLocaleString('zh-TW', {hour12:false});
-    
     try {
       let memberRef, currentData = { totalDeposit: 0, totalSpend: 0, history: [] };
       if (id) {
@@ -160,37 +138,36 @@
       } else {
         memberRef = push(ref(db, 'members'));
       }
-
       const newDep = type === 'deposit' ? (currentData.totalDeposit || 0) + amount : (currentData.totalDeposit || 0);
       const newSpe = type === 'spend' ? (currentData.totalSpend || 0) + amount : (currentData.totalSpend || 0);
       const newBalance = newDep - newSpe;
-      
       const newHistory = currentData.history || [];
-      newHistory.unshift({ date: dateStr, type: type==='deposit'?'儲值':'消費', amount: amount, note: note, afterBalance: newBalance });
+      newHistory.unshift({ date: dateStr, type: type==='deposit'?'儲值':'消費', amount, note, afterBalance: newBalance });
 
       await update(memberRef, {
         name, level, totalDeposit: newDep, totalSpend: newSpe, balance: newBalance,
-        history: newHistory.slice(0, 30),
-        lastUpdate: Date.now()
+        history: newHistory.slice(0, 30), lastUpdate: Date.now()
       });
 
       document.getElementById('memberForm').reset();
       document.getElementById('memberId').value = '';
       document.getElementById('searchTip').innerText = "";
-      showStatus("💰 數據已完美同步");
+      showStatus("💰 同步成功");
     } catch (e) { alert("儲存失敗"); }
   };
 
+  // 4. 即時監聽名單 (修復排行不顯示)
   onValue(ref(db, 'members'), (snapshot) => {
-    const data = snapshot.val();
-    globalMembers = data || {};
-    listDiv.innerHTML = '';
-    if (!data) return;
+    globalMembers = snapshot.val() || {};
+    renderList(globalMembers);
+  });
 
+  function renderList(data) {
+    const listDiv = document.getElementById('memberList');
+    listDiv.innerHTML = '';
     const weights = { "VIP 尊爵": 5, "白金金鑽": 4, "黃金銀鑽": 3, "白銀銅鑽": 2, "普通會員": 1 };
     const sorted = Object.entries(data).sort(([,a], [,b]) => weights[b.level] - weights[a.level] || (b.balance - a.balance));
 
-    const listDiv = document.getElementById('memberList');
     sorted.forEach(([id, m], index) => {
       const card = document.createElement('div');
       card.className = 'member-card';
@@ -201,34 +178,32 @@
           <div style="margin-top:10px;"><span style="font-size:0.8rem; color:#888;">可用餘額</span><br><span class="balance-tag">$${m.balance || 0}</span></div>
         </div>
         <div class="drawer" id="drawer-${id}">
-          <div style="font-size:0.8rem; color:var(--gold-light); margin-bottom:10px; font-weight:bold; border-bottom:1px solid #222; padding-bottom:5px;">📜 歷史明細</div>
+          <div style="font-size:0.8rem; color:var(--gold-light); margin-bottom:10px; font-weight:bold;">📜 歷史明細</div>
           ${(m.history || []).map(h => `
             <div class="history-item">
-              <span>${h.date.split(' ')[0]} <b class="${h.type==='儲值'?'history-type-dep':'history-type-spe'}">${h.type}</b></span>
-              <span>$${h.amount} ➔ <b style="color:#fff;">$${h.afterBalance}</b></span>
+              <span>${h.date.split(' ')[0]} <b style="color:${h.type==='儲值'?'#00ff88':'#ff4d4d'}">${h.type}</b></span>
+              <span>$${h.amount} ➔ $${h.afterBalance}</span>
             </div>
-            <div style="font-size:0.7rem; color:#555; margin-bottom:8px; padding-left:5px;">備註：${h.note}</div>
           `).join('')}
           <div class="btn-group">
-            <button class="btn-action edit" onclick="editMember('${id}','${m.name}','${m.level}')">選取操作</button>
-            <button class="btn-action del" onclick="deleteMember('${id}','${m.name}')">刪除</button>
+            <button class="btn-action" onclick="editMember('${id}','${m.name}','${m.level}')">選取</button>
+            <button class="btn-action" onclick="deleteMember('${id}','${m.name}')" style="color:#ff4d4d">刪除</button>
           </div>
         </div>
       `;
       listDiv.appendChild(card);
     });
-  });
+  }
 
   window.editMember = (id, n, l) => {
     document.getElementById('memberId').value = id;
     document.getElementById('name').value = n;
     document.getElementById('level').value = l;
-    document.getElementById('searchTip').innerText = "✨ 正在操作：" + n;
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   window.deleteMember = async (id, n) => {
-    if (confirm(`確定刪除 ${n}？所有紀錄將消失。`)) await remove(ref(db, 'members/' + id));
+    if (confirm(`確定刪除 ${n}？`)) await remove(ref(db, 'members/' + id));
   };
 
   function showStatus(msg) {
@@ -239,4 +214,3 @@
 </script>
 </body>
 </html>
-
