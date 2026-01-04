@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>美業會員_ 尊榮行動管理</title>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, set, push, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC0hBN9TH3UJSOsx5XVyQ08f_2RUckvXYU",
+  authDomain: "holyhairsalon-f73bf.firebaseapp.com",
+  // ⚠️ 這一行是寫入資料庫的關鍵，請務必手動加上：
+  databaseURL: "https://holyhairsalon-f73bf-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "holyhairsalon-f73bf",
+  storageBucket: "holyhairsalon-f73bf.firebasestorage.app",
+  messagingSenderId: "960169055224",
+  appId: "1:960169055224:web:4f8a45c0d3e31a93bf3c0d",
+  measurementId: "G-BC8J4V9NLP"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    window.db = db; // 掛載到全域供後續使用
+  </script>
+
+  <style>
+    /* 延用之前的奢華黑金 CSS */
+    :root {
+      --bg-dark: #050505; --card-bg: #121212;
+      --gold-dark: #7a5c0d; --gold-light: #f1c40f;
+      --text-main: #e0e0e0; --input-bg: #1a1a1a;
+      --emerald: #00ff88; --ruby: #ff4d4d; --sapphire: #00d4ff; --amethyst: #cc88ff;
+    }
+    body { font-family: sans-serif; background: var(--bg-dark); color: var(--text-main); padding: 15px; display: flex; flex-direction: column; align-items: center; }
+    
+    /* 呼吸邊框容器 */
+    .container { 
+      width: 100%; max-width: 450px; background: var(--card-bg); 
+      padding: 25px; border-radius: 24px; border: 1px solid var(--gold-dark);
+      animation: borderBreath 4s infinite ease-in-out;
+    }
+    @keyframes borderBreath {
+      0%, 100% { border-color: #3d2f0a; box-shadow: 0 0 15px rgba(122, 92, 13, 0.2); }
+      50% { border-color: var(--gold-light); box-shadow: 0 0 30px rgba(241, 196, 15, 0.4); }
+    }
+
+    /* 呼吸按鈕 */
+    .btn { 
+      width: 100%; padding: 16px; border-radius: 14px; border: none; font-weight: bold;
+      background-color: var(--gold-dark); color: #000; margin-top: 15px;
+      animation: buttonBreath 4s infinite ease-in-out; transition: all 0.4s;
+    }
+    @keyframes buttonBreath {
+      0%, 100% { background-color: #8e6d13; transform: scale(1); }
+      50% { background-color: var(--gold-light); transform: scale(0.98); }
+    }
+    .btn-save:active { background: var(--emerald) !important; box-shadow: 0 0 20px var(--emerald); }
+
+    /* 輸入框與卡片設計 */
+    input, select { width: 100%; padding: 14px; margin-top: 5px; background: var(--input-bg); border: 1px solid #333; border-radius: 10px; color: #fff; }
+    .member-card { background: #1a1a1a; padding: 15px; border-radius: 15px; margin-top: 15px; border: 1px solid #333; }
+    .card-title { color: var(--gold-light); font-weight: bold; }
+    .status-msg { position: fixed; top: 10px; background: var(--emerald); color: #000; padding: 10px 20px; border-radius: 20px; font-weight: bold; z-index: 100; display: none;}
+  </style>
+</head>
+<body>
+
+<div id="status" class="status-msg">已實時同步</div>
+
+<div class="container">
+  <h1 style="color: var(--gold-light); text-align: center;">美業會員_ 尊榮行動管理</h1>
+  
+  <form id="memberForm">
+    <input type="hidden" id="memberId">
+    <label>姓名</label><input type="text" id="name" required>
+    <label>聯絡方式</label><input type="text" id="contact" required>
+    
+    <div style="display: flex; gap: 10px; margin-top: 10px;">
+      <div style="flex:1;"><label>等級</label>
+        <select id="level">
+          <option value="普通">普通會員</option>
+          <option value="VIP">VIP 尊爵</option>
+          <option value="白金">白金卡</option>
+        </select>
+      </div>
+      <div style="flex:1;"><label>本次儲值</label>
+        <input type="number" id="deposit" value="0">
+      </div>
+    </div>
+
+    <button type="button" class="btn btn-save" onclick="handleSave()">✨ 儲存 / 更新資料</button>
+  </form>
+
+  <hr style="border: 0; border-top: 1px solid #333; margin: 30px 0;">
+
+  <h2 style="color: var(--gold-light); font-size: 1.1rem;">📊 實時會員清單</h2>
+  <div id="memberList"></div>
+</div>
+
+<script type="module">
+  import { ref, set, push, onValue, update, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+  // --- 保存與自動加總邏輯 ---
+  window.handleSave = async () => {
+    const id = document.getElementById('memberId').value;
+    const name = document.getElementById('name').value;
+    const contact = document.getElementById('contact').value;
+    const level = document.getElementById('level').value;
+    const deposit = Number(document.getElementById('deposit').value);
+
+    if (!name || !contact) return alert("請填寫基本資料");
+
+    if (id) {
+      // 更新現有會員：自動加總
+      const memberRef = ref(window.db, 'members/' + id);
+      const snapshot = await get(memberRef);
+      const oldData = snapshot.val();
+      
+      const newTotal = (Number(oldData.totalSpend) || 0) + deposit;
+      const newPoints = (Number(oldData.points) || 0) + Math.floor(deposit / 10);
+
+      await update(memberRef, {
+        name, contact, level,
+        totalSpend: newTotal,
+        points: newPoints,
+        lastUpdate: Date.now()
+      });
+    } else {
+      // 新增會員
+      const membersRef = ref(window.db, 'members');
+      await push(membersRef, {
+        name, contact, level,
+        totalSpend: deposit,
+        points: Math.floor(deposit / 10),
+        createdAt: Date.now()
+      });
+    }
+
+    document.getElementById('memberForm').reset();
+    document.getElementById('memberId').value = '';
+    showStatus("同步完成");
+  };
+
+  // --- 監聽資料庫 (Real-time) ---
+  const memberListDiv = document.getElementById('memberList');
+  const membersRef = ref(window.db, 'members');
+
+  onValue(membersRef, (snapshot) => {
+    const data = snapshot.val();
+    memberListDiv.innerHTML = '';
+    
+    for (let id in data) {
+      const m = data[id];
+      const card = document.createElement('div');
+      card.className = 'member-card';
+      card.innerHTML = `
+        <div class="card-title">${m.name} <small style="color:#666; font-weight:normal;">(${m.level})</small></div>
+        <div style="font-size: 0.9rem; margin-top:5px;">
+          累積消費：<span style="color: var(--gold-light)">$${m.totalSpend}</span> | 
+          積分：<span style="color: var(--gold-light)">${m.points}</span>
+        </div>
+        <button onclick="editMember('${id}', '${m.name}', '${m.contact}', '${m.level}')" 
+                style="margin-top:10px; background:none; border:1px solid var(--gold-dark); color:var(--gold-light); border-radius:5px; padding:5px 10px; width:100%;">
+          編輯資料
+        </button>
+      `;
+      memberListDiv.appendChild(card);
+    }
+  });
+
+  window.editMember = (id, name, contact, level) => {
+    document.getElementById('memberId').value = id;
+    document.getElementById('name').value = name;
+    document.getElementById('contact').value = contact;
+    document.getElementById('level').value = level;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  function showStatus(msg) {
+    const s = document.getElementById('status');
+    s.innerText = msg; s.style.display = 'block';
+    setTimeout(() => s.style.display = 'none', 2000);
+  }
+</script>
+</body>
+</html>
