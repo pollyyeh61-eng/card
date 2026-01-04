@@ -88,16 +88,17 @@
   import { getDatabase, ref, push, onValue, update, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
   // 1. Firebase 配置 (已補上關鍵的 databaseURL)
-  const firebaseConfig = {
-    apiKey: "AIzaSyC0hBN9TH3UJSOsx5XVyQ08f_2RUckvXYU",
-    authDomain: "holyhairsalon-f73bf.firebaseapp.com",
-    databaseURL: "https://holyhairsalon-f73bf-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "holyhairsalon-f73bf",
-    storageBucket: "holyhairsalon-f73bf.firebasestorage.app",
-    messagingSenderId: "960169055224",
-    appId: "1:960169055224:web:4f8a45c0d3e31a93bf3c0d",
-    measurementId: "G-BC8J4V9NLP"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyC0hBN9TH3UJSOsx5XVyQ08f_2RUckvXYU",
+  authDomain: "holyhairsalon-f73bf.firebaseapp.com",
+  // ⚠️ 請務必改用這個網址，這與你的 image_e65487.jpg 完全對應
+  databaseURL: "https://holyhairsalon-f73bf-default-rtdb.firebaseio.com", 
+  projectId: "holyhairsalon-f73bf",
+  storageBucket: "holyhairsalon-f73bf.firebasestorage.app",
+  messagingSenderId: "960169055224",
+  appId: "1:960169055224:web:4f8a45c0d3e31a93bf3c0d",
+  measurementId: "G-BC8J4V9NLP"
+};
 
   // 2. 初始化
   const app = initializeApp(firebaseConfig);
@@ -199,3 +200,4 @@
 
 </body>
 </html>
+
