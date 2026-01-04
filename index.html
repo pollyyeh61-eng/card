@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>美業尊榮會員系統</title>
+  <title>美業尊榮管理系統 - 日期追蹤版</title>
   <style>
     :root {
       --bg-dark: #050505; --card-bg: #121212;
@@ -11,7 +11,7 @@
       --text-main: #e0e0e0; 
       --btn-save: #00ff88; 
       --btn-edit: #00d4ff; 
-      --btn-delete: #ff4d4d; /* 紅寶石 */
+      --btn-delete: #ff4d4d;
     }
     
     body { 
@@ -26,7 +26,7 @@
       box-shadow: 0 0 20px rgba(0, 0, 0, 1);
     }
     
-    h1 { color: var(--gold-light); text-align: center; letter-spacing: 2px; }
+    h1 { color: var(--gold-light); text-align: center; letter-spacing: 2px; margin-bottom: 20px; }
     
     label { display: block; margin-top: 15px; font-size: 0.8rem; color: #888; }
     
@@ -58,7 +58,7 @@
       background: #1a1a1a; padding: 20px; border-radius: 20px; margin-top: 18px; 
       border: 1px solid #333; position: relative; transition: all 0.4s;
     }
-    .member-card:hover { border-color: var(--gold-light); transform: translateY(-5px); }
+    .member-card:hover { border-color: var(--gold-light); transform: translateY(-3px); }
     
     .rank-badge { 
       position: absolute; right: 0; top: 0; background: var(--gold-light); 
@@ -73,18 +73,20 @@
       flex: 3; background: transparent; border: 1px solid #444; color: #aaa; 
       cursor: pointer; padding: 10px; border-radius: 12px; transition: 0.3s;
     }
-    .btn-edit:hover { border-color: var(--btn-edit); color: var(--btn-edit); box-shadow: 0 0 10px rgba(0, 212, 255, 0.2); }
+    .btn-edit:hover { border-color: var(--btn-edit); color: var(--btn-edit); }
 
     .btn-del {
       flex: 1; background: transparent; border: 1px solid #444; color: #666; 
       cursor: pointer; padding: 10px; border-radius: 12px; transition: 0.3s;
     }
-    .btn-del:hover { border-color: var(--btn-delete); color: var(--btn-delete); box-shadow: 0 0 10px rgba(255, 77, 77, 0.2); }
+    .btn-del:hover { border-color: var(--btn-delete); color: var(--btn-delete); }
 
     .status-msg { 
       position: fixed; top: 20px; background: var(--btn-save); color: #000; 
       padding: 12px 30px; border-radius: 30px; display: none; z-index: 100; font-weight: bold;
     }
+    
+    .date-text { font-size: 0.7rem; color: #555; margin-top: 5px; }
   </style>
 </head>
 <body>
@@ -92,7 +94,7 @@
 <div id="status" class="status-msg">同步成功</div>
 
 <div class="container">
-  <h1>尊榮會員管理系統</h1>
+  <h1>尊榮管理系統</h1>
   
   <form id="memberForm">
     <input type="hidden" id="memberId">
@@ -114,13 +116,13 @@
       <label><input type="radio" name="transType" value="spend"> ✂️ 消費</label>
     </div>
 
-    <label>交易金額</label>
+    <label>本次金額</label>
     <input type="number" id="amount" value="0" onclick="this.select()">
     
     <label>備註紀錄</label>
-    <input type="text" id="note" placeholder="如：入會、洗剪、產品">
+    <input type="text" id="note" placeholder="如：入會儲值、洗剪染燙">
 
-    <button type="button" class="btn-save" onclick="handleSave()">✨ 提交數據</button>
+    <button type="button" class="btn-save" onclick="handleSave()">✨ 提交數據並更新日期</button>
   </form>
 
   <hr style="border:0; border-top:1px solid #222; margin: 35px 0;">
@@ -146,7 +148,7 @@
   const db = getDatabase(app);
   const listDiv = document.getElementById('memberList');
 
-  // 等級金額自動帶入
+  // 等級金額自動帶入 (白銀銅鑽已改為1萬)
   window.autoFillAmount = () => {
     const level = document.getElementById('level').value;
     const amountInput = document.getElementById('amount');
@@ -160,7 +162,7 @@
     amountInput.value = prices[level] || 0;
   };
 
-  // 儲存與更新
+  // 儲存與更新 (包含日期捕捉)
   window.handleSave = async () => {
     const id = document.getElementById('memberId').value;
     const name = document.getElementById('name').value;
@@ -168,8 +170,11 @@
     const amount = Number(document.getElementById('amount').value);
     const note = document.getElementById('note').value;
     const type = document.querySelector('input[name="transType"]:checked').value;
-
+    
     if (!name) return alert("請輸入姓名");
+
+    const now = new Date();
+    const dateString = `${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
 
     try {
       let memberRef;
@@ -185,33 +190,35 @@
 
       let newDep = Number(currentData.totalDeposit || 0);
       let newSpe = Number(currentData.totalSpend || 0);
-      type === 'deposit' ? newDep += amount : newSpe += amount;
+      
+      if(type === 'deposit') {
+        newDep += amount;
+      } else {
+        newSpe += amount;
+      }
 
       await update(memberRef, {
         name, level,
         totalDeposit: newDep, totalSpend: newSpe,
         balance: newDep - newSpe,
         lastNote: note || (type === 'deposit' ? "儲值" : "消費"),
-        lastUpdate: Date.now()
+        lastDate: dateString, // 儲存日期
+        lastUpdateTimestamp: Date.now()
       });
 
       document.getElementById('memberForm').reset();
       document.getElementById('memberId').value = '';
-      showStatus("✅ 數據更新成功");
-    } catch (e) { alert("錯誤：" + e.message); }
+      showStatus("✅ 資料與日期已更新");
+    } catch (e) { alert("出錯了"); }
   };
 
-  // 刪除會員
   window.deleteMember = async (id, name) => {
-    if (confirm(`確定要刪除會員 [ ${name} ] 嗎？此操作無法還原。`)) {
-      try {
-        await remove(ref(db, 'members/' + id));
-        showStatus("🗑️ 會員已刪除");
-      } catch (e) { alert("刪除失敗"); }
+    if (confirm(`確定要刪除會員 [ ${name} ] 嗎？`)) {
+      await remove(ref(db, 'members/' + id));
+      showStatus("🗑️ 已移除");
     }
   };
 
-  // 監聽雲端
   onValue(ref(db, 'members'), (snapshot) => {
     const data = snapshot.val();
     if (!data) { listDiv.innerHTML = ''; return; }
@@ -233,13 +240,20 @@
       card.innerHTML = `
         <div class="rank-badge">RANK ${index + 1}</div>
         <div style="color:var(--gold-light); font-weight:bold; font-size:1.2rem;">${m.name}</div>
-        <div style="font-size:0.75rem; color:#666; margin-top:4px;">${m.level}</div>
-        <div style="margin-top:15px;">
-          <span style="font-size:0.8rem; color:#888;">餘額</span><br>
+        <div style="font-size:0.7rem; color:#666;">${m.level}</div>
+        
+        <div style="margin-top:12px;">
+          <span style="font-size:0.8rem; color:#888;">目前餘額</span><br>
           <span class="balance-tag">$${m.balance || 0}</span>
         </div>
+
+        <div style="margin-top:10px; border-top:1px solid #222; padding-top:10px;">
+          <div style="font-size:0.75rem; color:#aaa;">📝 備註：${m.lastNote || '無'}</div>
+          <div class="date-text">📅 最後往來：${m.lastDate || '無紀錄'}</div>
+        </div>
+
         <div class="btn-group">
-          <button onclick="editMember('${id}', '${m.name}', '${m.level}')" class="btn-edit">操作</button>
+          <button onclick="editMember('${id}', '${m.name}', '${m.level}')" class="btn-edit">選取操作</button>
           <button onclick="deleteMember('${id}', '${m.name}')" class="btn-del">刪除</button>
         </div>
       `;
@@ -263,5 +277,3 @@
 </script>
 </body>
 </html>
-
-
