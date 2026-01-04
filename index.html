@@ -11,26 +11,44 @@
       --text-main: #e0e0e0; 
       --btn-save: #00ff88; --btn-edit: #00d4ff; --btn-delete: #ff4d4d;
     }
-    body { font-family: 'PingFang TC', sans-serif; background: var(--bg-dark); color: var(--text-main); padding: 15px; display: flex; flex-direction: column; align-items: center; }
-    .container { width: 100%; max-width: 450px; background: var(--card-bg); padding: 25px; border-radius: 28px; border: 1px solid var(--gold-dark); box-shadow: 0 0 20px #000; }
+    body { font-family: 'PingFang TC', sans-serif; background: var(--bg-dark); color: var(--text-main); padding: 15px; display: flex; flex-direction: column; align-items: center; margin: 0; }
+    .container { width: 100%; max-width: 450px; background: var(--card-bg); padding: 25px; border-radius: 28px; border: 1px solid var(--gold-dark); box-shadow: 0 0 20px #000; box-sizing: border-box; }
     h1 { color: var(--gold-light); text-align: center; letter-spacing: 2px; }
     label { display: block; margin-top: 15px; font-size: 0.8rem; color: #888; }
     input, select { width: 100%; padding: 14px; margin-top: 8px; background: #1a1a1a; border: 1px solid #333; border-radius: 12px; color: #fff; box-sizing: border-box; font-size: 1rem; }
-    #searchTip { font-size: 0.75rem; color: var(--btn-edit); margin-top: 5px; height: 1rem; display: block; }
+    
     .transaction-type { display: flex; gap: 10px; margin-top: 20px; }
-    .transaction-type label { flex: 1; padding: 12px; background: #222; border-radius: 10px; text-align: center; cursor: pointer; border: 1px solid transparent; }
+    .transaction-type label { flex: 1; padding: 12px; background: #222; border-radius: 10px; text-align: center; cursor: pointer; border: 1px solid transparent; transition: 0.3s; }
     .transaction-type input { display: none; }
     .transaction-type label:has(input:checked) { border-color: var(--gold-light); color: var(--gold-light); background: #2d2d2d; }
-    .btn-save { width: 100%; padding: 18px; border-radius: 16px; border: none; font-weight: bold; background: linear-gradient(135deg, #008f4f, #00ff88); margin-top: 25px; cursor: pointer; font-size: 1.1rem; }
+    
+    .btn-save { width: 100%; padding: 18px; border-radius: 16px; border: none; font-weight: bold; background: linear-gradient(135deg, #008f4f, #00ff88); margin-top: 25px; cursor: pointer; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3); }
 
-    /* 卡片與抽屜 */
+    /* 排行榜與卡片 */
     .member-card { background: #1a1a1a; border-radius: 20px; margin-top: 18px; border: 1px solid #333; overflow: hidden; position: relative; }
     .card-header { padding: 20px; cursor: pointer; }
     .rank-badge { position: absolute; right: 0; top: 0; background: var(--gold-light); color: #000; padding: 5px 12px; border-radius: 0 0 0 15px; font-size: 0.7rem; font-weight: 900; }
     .balance-tag { font-size: 1.6rem; font-weight: 800; color: var(--gold-light); }
+    
+    /* 歷史明細抽屜 */
     .drawer { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out; background: #151515; }
-    .drawer.open { max-height: 800px; border-top: 1px solid #333; padding: 15px; overflow-y: auto; }
-    .history-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #222; font-size: 0.8rem; }
+    .drawer.open { max-height: 1000px; border-top: 1px solid #333; padding: 15px; }
+    
+    /* 單筆歷史紀錄樣式 - 加強點擊感 */
+    .history-item { 
+      padding: 12px; border-bottom: 1px solid #222; font-size: 0.85rem; cursor: pointer; transition: background 0.2s; border-radius: 8px;
+    }
+    .history-item:hover { background: #222; }
+    .history-item-top { display: flex; justify-content: space-between; align-items: center; }
+    
+    /* 詳細資訊面板 (二級抽屜) */
+    .detail-box { 
+      display: none; background: #000; margin-top: 8px; padding: 10px; border-radius: 8px; border-left: 3px solid var(--gold-light); font-size: 0.75rem; color: #aaa; line-height: 1.5;
+    }
+    .detail-box.show { display: block; animation: slideIn 0.3s ease-out; }
+
+    @keyframes slideIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
     .btn-group { display: flex; gap: 8px; padding-top: 15px; }
     .btn-action { flex: 1; padding: 10px; border-radius: 10px; border: 1px solid #444; background: transparent; color: #888; cursor: pointer; }
     .status-msg { position: fixed; top: 20px; background: var(--btn-save); color: #000; padding: 10px 30px; border-radius: 30px; display: none; z-index: 100; font-weight: bold; }
@@ -45,34 +63,28 @@
   <form id="memberForm">
     <input type="hidden" id="memberId">
     <label>會員姓名</label>
-    <input type="text" id="name" placeholder="輸入名字自動搜尋..." oninput="autoMatchMember()" required autocomplete="off">
-    <span id="searchTip"></span>
-    
-    <label>等級 (白銀銅鑽 1萬)</label>
+    <input type="text" id="name" placeholder="輸入名字..." oninput="autoMatchMember()" required autocomplete="off">
+    <label>等級</label>
     <select id="level" onchange="autoFillAmount()">
-      <option value="普通會員">普通會員 (自訂)</option>
-      <option value="VIP 尊爵">VIP 尊爵 (10萬)</option>
-      <option value="白金金鑽">白金金鑽 (5萬)</option>
-      <option value="黃金銀鑽">黃金銀鑽 (2萬)</option>
-      <option value="白銀銅鑽">白銀銅鑽 (1萬)</option>
+      <option value="普通會員">普通會員</option>
+      <option value="VIP 尊爵">VIP 尊爵</option>
+      <option value="白金金鑽">白金金鑽</option>
+      <option value="黃金銀鑽">黃金銀鑽</option>
+      <option value="白銀銅鑽">白銀銅鑽</option>
     </select>
-
     <div class="transaction-type">
       <label><input type="radio" name="transType" value="deposit" checked> 💰 儲值</label>
       <label><input type="radio" name="transType" value="spend"> ✂️ 消費</label>
     </div>
-
     <label>金額</label>
     <input type="number" id="amount" value="0" onclick="this.select()">
-    
-    <label>備註</label>
-    <input type="text" id="note" placeholder="項目說明">
-    
+    <label>項目說明 (備註)</label>
+    <input type="text" id="note" placeholder="例如：洗剪染、新客入會">
     <button type="button" class="btn-save" onclick="handleSave()">✨ 提交並儲存</button>
   </form>
 
   <hr style="border:0; border-top:1px solid #222; margin: 30px 0;">
-  <h2>📊 實時排行</h2>
+  <h2 style="display:flex; align-items:center; gap:10px;">📊 實時排行</h2>
   <div id="memberList"></div>
 </div>
 
@@ -94,41 +106,34 @@
   const db = getDatabase(app);
   let globalMembers = {};
 
-  // 1. 智慧辨識
   window.autoMatchMember = () => {
     const inputName = document.getElementById('name').value.trim();
-    const tip = document.getElementById('searchTip');
-    const levelSelect = document.getElementById('level');
-    const idInput = document.getElementById('memberId');
-    if (!inputName) { tip.innerText = ""; idInput.value = ""; return; }
     const matched = Object.entries(globalMembers).find(([id, m]) => m.name === inputName);
     if (matched) {
-      const [id, data] = matched;
-      idInput.value = id;
-      levelSelect.value = data.level;
-      tip.innerText = "✨ 老客戶：" + data.level;
+      document.getElementById('memberId').value = matched[0];
+      document.getElementById('level').value = matched[1].level;
     } else {
-      idInput.value = ""; tip.innerText = "";
+      document.getElementById('memberId').value = "";
     }
   };
 
-  // 2. 自動帶入金額
   window.autoFillAmount = () => {
     const prices = { "VIP 尊爵": 100000, "白金金鑽": 50000, "黃金銀鑽": 20000, "白銀銅鑽": 10000, "普通會員": 0 };
     document.getElementById('amount').value = prices[document.getElementById('level').value] || 0;
   };
 
-  // 3. 儲存數據
   window.handleSave = async () => {
     const id = document.getElementById('memberId').value;
     const name = document.getElementById('name').value.trim();
     const level = document.getElementById('level').value;
     const amount = Number(document.getElementById('amount').value);
-    const note = document.getElementById('note').value || "無備註";
+    const note = document.getElementById('note').value || "無備註說明";
     const type = document.querySelector('input[name="transType"]:checked').value;
     if (!name) return alert("請輸入姓名");
 
-    const dateStr = new Date().toLocaleString('zh-TW', {hour12:false});
+    const dateFull = new Date().toLocaleString('zh-TW', {hour12:false});
+    const dateShort = dateFull.split(' ')[0];
+
     try {
       let memberRef, currentData = { totalDeposit: 0, totalSpend: 0, history: [] };
       if (id) {
@@ -138,51 +143,53 @@
       } else {
         memberRef = push(ref(db, 'members'));
       }
+
       const newDep = type === 'deposit' ? (currentData.totalDeposit || 0) + amount : (currentData.totalDeposit || 0);
       const newSpe = type === 'spend' ? (currentData.totalSpend || 0) + amount : (currentData.totalSpend || 0);
       const newBalance = newDep - newSpe;
+
       const newHistory = currentData.history || [];
-      newHistory.unshift({ date: dateStr, type: type==='deposit'?'儲值':'消費', amount, note, afterBalance: newBalance });
+      newHistory.unshift({ date: dateShort, fullTime: dateFull, type: type==='deposit'?'儲值':'消費', amount, note, afterBalance: newBalance });
 
       await update(memberRef, {
         name, level, totalDeposit: newDep, totalSpend: newSpe, balance: newBalance,
-        history: newHistory.slice(0, 30), lastUpdate: Date.now()
+        history: newHistory.slice(0, 50), lastUpdate: Date.now()
       });
 
       document.getElementById('memberForm').reset();
       document.getElementById('memberId').value = '';
-      document.getElementById('searchTip').innerText = "";
-      showStatus("💰 同步成功");
+      showStatus("✅ 資料已同步");
     } catch (e) { alert("儲存失敗"); }
   };
 
-  // 4. 即時監聽名單 (修復排行不顯示)
   onValue(ref(db, 'members'), (snapshot) => {
     globalMembers = snapshot.val() || {};
-    renderList(globalMembers);
-  });
-
-  function renderList(data) {
     const listDiv = document.getElementById('memberList');
     listDiv.innerHTML = '';
     const weights = { "VIP 尊爵": 5, "白金金鑽": 4, "黃金銀鑽": 3, "白銀銅鑽": 2, "普通會員": 1 };
-    const sorted = Object.entries(data).sort(([,a], [,b]) => weights[b.level] - weights[a.level] || (b.balance - a.balance));
+    const sorted = Object.entries(globalMembers).sort(([,a], [,b]) => weights[b.level] - weights[a.level] || (b.balance - a.balance));
 
     sorted.forEach(([id, m], index) => {
       const card = document.createElement('div');
       card.className = 'member-card';
       card.innerHTML = `
-        <div class="card-header" onclick="document.getElementById('drawer-${id}').classList.toggle('open')">
+        <div class="card-header" onclick="toggleDrawer('${id}')">
           <div class="rank-badge">RANK ${index + 1}</div>
-          <div style="color:var(--gold-light); font-weight:bold;">${m.name} <span style="font-size:0.7rem; color:#666;">| ${m.level}</span></div>
+          <div style="color:var(--gold-light); font-weight:bold;">${m.name} <span style="font-size:0.75rem; color:#666; font-weight:normal;">| ${m.level}</span></div>
           <div style="margin-top:10px;"><span style="font-size:0.8rem; color:#888;">可用餘額</span><br><span class="balance-tag">$${m.balance || 0}</span></div>
         </div>
         <div class="drawer" id="drawer-${id}">
-          <div style="font-size:0.8rem; color:var(--gold-light); margin-bottom:10px; font-weight:bold;">📜 歷史明細</div>
-          ${(m.history || []).map(h => `
-            <div class="history-item">
-              <span>${h.date.split(' ')[0]} <b style="color:${h.type==='儲值'?'#00ff88':'#ff4d4d'}">${h.type}</b></span>
-              <span>$${h.amount} ➔ $${h.afterBalance}</span>
+          <div style="font-size:0.85rem; color:var(--gold-light); margin-bottom:12px; font-weight:bold; display:flex; align-items:center; gap:5px;">📜 歷史明細 (點擊查看詳情)</div>
+          ${(m.history || []).map((h, i) => `
+            <div class="history-item" onclick="toggleDetail('${id}-${i}', event)">
+              <div class="history-item-top">
+                <span>${h.date} <b style="color:${h.type==='儲值'?'#00ff88':'#ff4d4d'}">${h.type}</b></span>
+                <span>$${h.amount} ➔ <b style="color:#fff;">$${h.afterBalance}</b></span>
+              </div>
+              <div class="detail-box" id="detail-${id}-${i}">
+                <div style="color:var(--gold-light); margin-bottom:3px;">🕒 完整時間：${h.fullTime}</div>
+                <div>📝 項目說明：${h.note}</div>
+              </div>
             </div>
           `).join('')}
           <div class="btn-group">
@@ -193,7 +200,20 @@
       `;
       listDiv.appendChild(card);
     });
-  }
+  });
+
+  // 控制一級抽屜 (會員卡片展開)
+  window.toggleDrawer = (id) => {
+    const d = document.getElementById(`drawer-${id}`);
+    d.classList.toggle('open');
+  };
+
+  // 控制二級抽屜 (歷史明細點擊展開)
+  window.toggleDetail = (detailId, event) => {
+    event.stopPropagation(); // 防止觸發到父層的 toggleDrawer
+    const det = document.getElementById(`detail-${detailId}`);
+    det.classList.toggle('show');
+  };
 
   window.editMember = (id, n, l) => {
     document.getElementById('memberId').value = id;
@@ -203,7 +223,7 @@
   };
 
   window.deleteMember = async (id, n) => {
-    if (confirm(`確定刪除 ${n}？`)) await remove(ref(db, 'members/' + id));
+    if (confirm(`確定刪除會員 ${n} 嗎？`)) await remove(ref(db, 'members/' + id));
   };
 
   function showStatus(msg) {
