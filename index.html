@@ -3,45 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>美業會員_ 尊榮行動管理</title>
-  
+  <title>美業尊榮管理系統 - 餘額排行版</title>
   <style>
-    /* 奢華黑金 CSS 樣式 */
     :root {
       --bg-dark: #050505; --card-bg: #121212;
-      --gold-dark: #7a5c0d; --gold-light: #f1c40f;
-      --text-main: #e0e0e0; --input-bg: #1a1a1a;
-      --emerald: #00ff88; --ruby: #ff4d4d;
+      --gold-light: #f1c40f; --gold-dark: #7a5c0d;
+      --text-main: #e0e0e0; --emerald: #00ff88; --ruby: #ff4d4d;
     }
     body { font-family: sans-serif; background: var(--bg-dark); color: var(--text-main); padding: 15px; display: flex; flex-direction: column; align-items: center; }
-    
-    .container { 
-      width: 100%; max-width: 450px; background: var(--card-bg); 
-      padding: 25px; border-radius: 24px; border: 1px solid var(--gold-dark);
-      animation: borderBreath 4s infinite ease-in-out;
-    }
-    @keyframes borderBreath {
-      0%, 100% { border-color: #3d2f0a; box-shadow: 0 0 15px rgba(122, 92, 13, 0.2); }
-      50% { border-color: var(--gold-light); box-shadow: 0 0 30px rgba(241, 196, 15, 0.4); }
-    }
-
-    .btn { 
-      width: 100%; padding: 16px; border-radius: 14px; border: none; font-weight: bold;
-      background-color: var(--gold-dark); color: #000; margin-top: 15px;
-      animation: buttonBreath 4s infinite ease-in-out; transition: all 0.4s; cursor: pointer;
-    }
-    @keyframes buttonBreath {
-      0%, 100% { background-color: #8e6d13; transform: scale(1); }
-      50% { background-color: var(--gold-light); transform: scale(0.98); }
-    }
-    .btn:active { background: var(--emerald) !important; transform: scale(0.95); }
-
-    input, select { width: 100%; padding: 14px; margin-top: 5px; background: var(--input-bg); border: 1px solid #333; border-radius: 10px; color: #fff; box-sizing: border-box; }
-    label { display: block; margin-top: 10px; font-size: 0.9rem; color: #888; }
-    
-    .member-card { background: #1a1a1a; padding: 15px; border-radius: 15px; margin-top: 15px; border: 1px solid #333; position: relative; }
-    .card-title { color: var(--gold-light); font-weight: bold; font-size: 1.1rem; }
-    .status-msg { position: fixed; top: 10px; background: var(--emerald); color: #000; padding: 10px 20px; border-radius: 20px; font-weight: bold; z-index: 100; display: none;}
+    .container { width: 100%; max-width: 450px; background: var(--card-bg); padding: 25px; border-radius: 24px; border: 1px solid var(--gold-dark); box-shadow: 0 0 20px rgba(122, 92, 13, 0.2); }
+    h1, h2 { color: var(--gold-light); text-align: center; }
+    label { display: block; margin-top: 12px; font-size: 0.85rem; color: #888; }
+    input, select { width: 100%; padding: 12px; margin-top: 5px; background: #1a1a1a; border: 1px solid #333; border-radius: 10px; color: #fff; box-sizing: border-box; }
+    .btn { width: 100%; padding: 16px; border-radius: 14px; border: none; font-weight: bold; background: var(--gold-dark); color: #000; margin-top: 20px; cursor: pointer; transition: 0.3s; }
+    .btn:active { transform: scale(0.98); background: var(--gold-light); }
+    .member-card { background: #1a1a1a; padding: 15px; border-radius: 15px; margin-top: 15px; border-left: 5px solid var(--gold-dark); position: relative; }
+    .rank-badge { position: absolute; right: 15px; top: 15px; background: var(--gold-light); color: #000; padding: 2px 8px; border-radius: 5px; font-size: 0.7rem; font-weight: bold; }
+    .balance-tag { font-size: 1.2rem; font-weight: bold; color: var(--emerald); }
+    .status-msg { position: fixed; top: 10px; background: var(--emerald); color: #000; padding: 8px 20px; border-radius: 20px; display: none; z-index: 100; }
   </style>
 </head>
 <body>
@@ -49,37 +28,36 @@
 <div id="status" class="status-msg">同步成功</div>
 
 <div class="container">
-  <h1 style="color: var(--gold-light); text-align: center; margin-bottom: 20px;">美業會員_ 尊榮行動管理</h1>
+  <h1>尊榮會員管理</h1>
   
   <form id="memberForm">
     <input type="hidden" id="memberId">
     <label>會員姓名</label>
-    <input type="text" id="name" placeholder="請輸入姓名" required>
+    <input type="text" id="name" placeholder="輸入姓名" required>
     
-    <label>聯絡方式</label>
-    <input type="text" id="contact" placeholder="手機號碼" required>
-    
-    <div style="display: flex; gap: 10px;">
-      <div style="flex:1;">
-        <label>會員等級</label>
-        <select id="level">
-          <option value="普通會員">普通會員</option>
-          <option value="VIP 尊爵">VIP 尊爵</option>
-          <option value="白金金鑽">白金金鑽</option>
-        </select>
-      </div>
-      <div style="flex:1;">
-        <label>本次儲值/消費</label>
-        <input type="number" id="deposit" value="0">
-      </div>
+    <label>會員等級</label>
+    <select id="level">
+      <option value="VIP 尊爵">VIP 尊爵</option>
+      <option value="白金金鑽">白金金鑽</option>
+      <option value="普通會員">普通會員</option>
+    </select>
+
+    <div style="display: flex; gap: 10px; margin-top: 10px; background: #222; padding: 10px; border-radius: 10px;">
+      <label style="margin:0; color:#fff;"><input type="radio" name="transType" value="deposit" checked> 儲值</label>
+      <label style="margin:0; color:#fff;"><input type="radio" name="transType" value="spend"> 消費扣款</label>
     </div>
 
-    <button type="button" class="btn" onclick="handleSave()">✨ 儲存並自動計算加總</button>
+    <label>金額</label>
+    <input type="number" id="amount" value="0">
+    
+    <label>項目說明 (如：洗剪、儲值五千送一千)</label>
+    <input type="text" id="note" placeholder="備註事項">
+
+    <button type="button" class="btn" onclick="handleSave()">✨ 確認提交資料</button>
   </form>
 
-  <hr style="border: 0; border-top: 1px solid #333; margin: 30px 0;">
-
-  <h2 style="color: var(--gold-light); font-size: 1.1rem; margin-bottom: 10px;">📊 實時尊榮名單</h2>
+  <hr style="border:0; border-top:1px solid #333; margin: 30px 0;">
+  <h2>📊 尊榮榜 (按等級與餘額排序)</h2>
   <div id="memberList"></div>
 </div>
 
@@ -87,107 +65,104 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
   import { getDatabase, ref, push, onValue, update, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-  // 1. Firebase 配置 (已補上關鍵的 databaseURL)
-const firebaseConfig = {
-  apiKey: "AIzaSyC0hBN9TH3UJSOsx5XVyQ08f_2RUckvXYU",
-  authDomain: "holyhairsalon-f73bf.firebaseapp.com",
-  // ⚠️ 請務必改用這個網址，這與你的 image_e65487.jpg 完全對應
-  databaseURL: "https://holyhairsalon-f73bf-default-rtdb.firebaseio.com", 
-  projectId: "holyhairsalon-f73bf",
-  storageBucket: "holyhairsalon-f73bf.firebasestorage.app",
-  messagingSenderId: "960169055224",
-  appId: "1:960169055224:web:4f8a45c0d3e31a93bf3c0d",
-  measurementId: "G-BC8J4V9NLP"
-};
+  const firebaseConfig = {
+    apiKey: "AIzaSyC0hBN9TH3UJSOsx5XVyQ08f_2RUckvXYU",
+    authDomain: "holyhairsalon-f73bf.firebaseapp.com",
+    databaseURL: "https://holyhairsalon-f73bf-default-rtdb.firebaseio.com",
+    projectId: "holyhairsalon-f73bf",
+    storageBucket: "holyhairsalon-f73bf.firebasestorage.app",
+    messagingSenderId: "960169055224",
+    appId: "1:960169055224:web:4f8a45c0d3e31a93bf3c0d"
+  };
 
-  // 2. 初始化
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
-  // 3. 儲存與自動加總邏輯 (掛載至 window 供 HTML onclick 使用)
   window.handleSave = async () => {
     const id = document.getElementById('memberId').value;
     const name = document.getElementById('name').value;
-    const contact = document.getElementById('contact').value;
     const level = document.getElementById('level').value;
-    const deposit = Number(document.getElementById('deposit').value);
+    const amount = Number(document.getElementById('amount').value);
+    const note = document.getElementById('note').value;
+    const type = document.querySelector('input[name="transType"]:checked').value;
 
-    if (!name || !contact) return alert("請輸入完整資料");
+    if (!name) return alert("請輸入姓名");
 
     try {
-      if (id) {
-        // 更新現有會員：自動加總舊有數據
-        const memberRef = ref(db, 'members/' + id);
-        const snapshot = await get(memberRef);
-        const oldData = snapshot.val();
-        
-        const newTotal = (Number(oldData.totalSpend) || 0) + deposit;
-        const newPoints = (Number(oldData.points) || 0) + Math.floor(deposit / 10);
+      let memberRef;
+      let currentData = { totalDeposit: 0, totalSpend: 0, points: 0 };
 
-        await update(memberRef, {
-          name, contact, level,
-          totalSpend: newTotal,
-          points: newPoints,
-          lastUpdate: Date.now()
-        });
+      if (id) {
+        memberRef = ref(db, 'members/' + id);
+        const snap = await get(memberRef);
+        if (snap.exists()) currentData = snap.val();
       } else {
-        // 新增全新會員
-        const membersRef = ref(db, 'members');
-        await push(membersRef, {
-          name, contact, level,
-          totalSpend: deposit,
-          points: Math.floor(deposit / 10),
-          createdAt: Date.now()
-        });
+        memberRef = push(ref(db, 'members'));
       }
 
-      // 重置表單
+      // 運算邏輯：儲值加總，消費扣款
+      let newDeposit = Number(currentData.totalDeposit || 0);
+      let newSpend = Number(currentData.totalSpend || 0);
+
+      if (type === 'deposit') {
+        newDeposit += amount;
+      } else {
+        newSpend += amount;
+      }
+
+      await update(memberRef, {
+        name, level,
+        totalDeposit: newDeposit,
+        totalSpend: newSpend,
+        balance: newDeposit - newSpend,
+        lastNote: note || (type === 'deposit' ? "儲值" : "消費"),
+        lastUpdate: Date.now()
+      });
+
       document.getElementById('memberForm').reset();
       document.getElementById('memberId').value = '';
-      showStatus("✨ 資料已成功加總同步");
-    } catch (e) {
-      console.error(e);
-      alert("儲存失敗，請確認 Firebase Rules 是否已開啟。");
-    }
+      showStatus("💰 帳目已更新");
+    } catch (e) { alert("出錯了：" + e.message); }
   };
 
-  // 4. 監聽資料庫實時更新清單
-  const memberListDiv = document.getElementById('memberList');
   onValue(ref(db, 'members'), (snapshot) => {
     const data = snapshot.val();
-    memberListDiv.innerHTML = '';
-    
-    if (!data) {
-      memberListDiv.innerHTML = '<p style="color:#666; text-align:center;">尚無會員資料</p>';
-      return;
-    }
+    const listDiv = document.getElementById('memberList');
+    listDiv.innerHTML = '';
+    if (!data) return;
 
-    for (let id in data) {
-      const m = data[id];
+    // 排序權重：等級優先，餘額第二
+    const weights = { "VIP 尊爵": 3, "白金金鑽": 2, "普通會員": 1 };
+    const sorted = Object.entries(data).sort(([,a], [,b]) => {
+      if (weights[b.level] !== weights[a.level]) return weights[b.level] - weights[a.level];
+      return b.balance - a.balance;
+    });
+
+    sorted.forEach(([id, m], index) => {
       const card = document.createElement('div');
       card.className = 'member-card';
       card.innerHTML = `
-        <div class="card-title">${m.name} <small style="color:#666; font-size:0.7rem;">${m.level}</small></div>
-        <div style="font-size: 0.9rem; margin-top:8px;">
-          累積消費：<span style="color: var(--gold-light); font-weight:bold;">$${m.totalSpend || 0}</span><br>
-          現有積分：<span style="color: var(--emerald)">${m.points || 0} pt</span>
+        <div class="rank-badge">NO.${index + 1}</div>
+        <div style="color:var(--gold-light); font-weight:bold;">${m.name} <span style="font-size:0.7rem; color:#666;">| ${m.level}</span></div>
+        <div style="margin-top:10px;">
+          <span style="font-size:0.8rem; color:#888;">當前餘額</span><br>
+          <span class="balance-tag">$${m.balance || 0}</span>
         </div>
-        <button onclick="editMember('${id}', '${m.name}', '${m.contact}', '${m.level}')" 
-                style="margin-top:12px; background:none; border:1px solid #444; color:#888; border-radius:8px; padding:6px; width:100%; cursor:pointer; font-size:0.8rem;">
-          快速選取更新
-        </button>
+        <div style="font-size:0.75rem; color:#555; margin-top:5px;">
+          總儲值: $${m.totalDeposit || 0} / 總消費: $${m.totalSpend || 0}<br>
+          最近紀錄: ${m.lastNote || '無'}
+        </div>
+        <button onclick="editMember('${id}', '${m.name}', '${m.level}')" style="margin-top:10px; background:none; border:1px solid #333; color:#888; width:100%; cursor:pointer; padding:5px; border-radius:5px;">選取此會員進行操作</button>
       `;
-      memberListDiv.appendChild(card);
-    }
+      listDiv.appendChild(card);
+    });
   });
 
-  // 5. 點擊卡片將資料填回表單
-  window.editMember = (id, name, contact, level) => {
+  window.editMember = (id, name, level) => {
     document.getElementById('memberId').value = id;
     document.getElementById('name').value = name;
-    document.getElementById('contact').value = contact;
     document.getElementById('level').value = level;
-    document.getElementById('deposit').value = 0; // 清空金額讓使用者填入本次新金額
+    document.getElementById('amount').value = 0;
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -197,7 +172,5 @@ const firebaseConfig = {
     setTimeout(() => s.style.display = 'none', 3000);
   }
 </script>
-
 </body>
 </html>
-
