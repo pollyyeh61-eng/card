@@ -67,14 +67,15 @@
       <option value="白銀銅鑽">白銀銅鑽</option>
     </select>
 
+    <label>本次金額</label>
+    <input type="number" id="amount" value="0" onclick="this.select()">
+    
     <div class="transaction-type">
       <label><input type="radio" name="transType" value="deposit" checked> 💰 儲值</label>
       <label><input type="radio" name="transType" value="spend"> ✂️ 退費</label>
     </div>
 
-    <label>本次金額</label>
-    <input type="number" id="amount" value="0" onclick="this.select()">
-    
+   
     <label>備註 (項目說明)</label>
     <input type="text" id="note" placeholder="項目說明">
     
@@ -228,5 +229,6 @@
 </script>
 </body>
 </html>
+
 
 
