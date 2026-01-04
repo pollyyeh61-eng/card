@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>美業尊榮會員管理</title>
+  <title>尊榮管理 - 手機號碼增強版</title>
   <style>
     :root {
       --bg-dark: #050505; --card-bg: #121212;
@@ -24,27 +24,18 @@
     
     .btn-save { width: 100%; padding: 18px; border-radius: 16px; border: none; font-weight: bold; background: linear-gradient(135deg, #008f4f, #00ff88); margin-top: 25px; cursor: pointer; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3); }
 
-    /* 排行榜與卡片 */
     .member-card { background: #1a1a1a; border-radius: 20px; margin-top: 18px; border: 1px solid #333; overflow: hidden; position: relative; }
     .card-header { padding: 20px; cursor: pointer; }
     .rank-badge { position: absolute; right: 0; top: 0; background: var(--gold-light); color: #000; padding: 5px 12px; border-radius: 0 0 0 15px; font-size: 0.7rem; font-weight: 900; }
     .balance-tag { font-size: 1.6rem; font-weight: 800; color: var(--gold-light); }
     
-    /* 歷史明細抽屜 */
     .drawer { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out; background: #151515; }
-    .drawer.open { max-height: 1000px; border-top: 1px solid #333; padding: 15px; }
+    .drawer.open { max-height: 1200px; border-top: 1px solid #333; padding: 15px; }
     
-    /* 單筆歷史紀錄樣式 - 加強點擊感 */
-    .history-item { 
-      padding: 12px; border-bottom: 1px solid #222; font-size: 0.85rem; cursor: pointer; transition: background 0.2s; border-radius: 8px;
-    }
-    .history-item:hover { background: #222; }
+    .history-item { padding: 12px; border-bottom: 1px solid #222; font-size: 0.85rem; cursor: pointer; border-radius: 8px; }
     .history-item-top { display: flex; justify-content: space-between; align-items: center; }
     
-    /* 詳細資訊面板 (二級抽屜) */
-    .detail-box { 
-      display: none; background: #000; margin-top: 8px; padding: 10px; border-radius: 8px; border-left: 3px solid var(--gold-light); font-size: 0.75rem; color: #aaa; line-height: 1.5;
-    }
+    .detail-box { display: none; background: #000; margin-top: 8px; padding: 10px; border-radius: 8px; border-left: 3px solid var(--gold-light); font-size: 0.75rem; color: #aaa; line-height: 1.5; }
     .detail-box.show { display: block; animation: slideIn 0.3s ease-out; }
 
     @keyframes slideIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
@@ -59,11 +50,16 @@
 <div id="status" class="status-msg">同步成功</div>
 
 <div class="container">
-  <h1>會員管理系統</h1>
+  <h1>尊榮管理系統</h1>
   <form id="memberForm">
     <input type="hidden" id="memberId">
+    
     <label>會員姓名</label>
-    <input type="text" id="name" placeholder="輸入名字..." oninput="autoMatchMember()" required autocomplete="off">
+    <input type="text" id="name" placeholder="輸入名字自動辨識..." oninput="autoMatchMember()" required autocomplete="off">
+    
+    <label>手機號碼 (用於辨識)</label>
+    <input type="tel" id="phone" placeholder="輸入手機自動辨識..." oninput="autoMatchMember()" autocomplete="off">
+    
     <label>等級</label>
     <select id="level" onchange="autoFillAmount()">
       <option value="普通會員">普通會員</option>
@@ -72,19 +68,23 @@
       <option value="黃金銀鑽">黃金銀鑽</option>
       <option value="白銀銅鑽">白銀銅鑽</option>
     </select>
+
     <div class="transaction-type">
       <label><input type="radio" name="transType" value="deposit" checked> 💰 儲值</label>
       <label><input type="radio" name="transType" value="spend"> ✂️ 消費</label>
     </div>
+
     <label>金額</label>
     <input type="number" id="amount" value="0" onclick="this.select()">
+    
     <label>項目說明 (備註)</label>
-    <input type="text" id="note" placeholder="例如：洗剪染、新客入會">
+    <input type="text" id="note" placeholder="項目說明">
+    
     <button type="button" class="btn-save" onclick="handleSave()">✨ 提交並儲存</button>
   </form>
 
   <hr style="border:0; border-top:1px solid #222; margin: 30px 0;">
-  <h2 style="display:flex; align-items:center; gap:10px;">📊 實時排行</h2>
+  <h2>📊 實時排行</h2>
   <div id="memberList"></div>
 </div>
 
@@ -106,12 +106,22 @@
   const db = getDatabase(app);
   let globalMembers = {};
 
+  // 1. 智慧雙向辨識 (姓名或手機)
   window.autoMatchMember = () => {
     const inputName = document.getElementById('name').value.trim();
-    const matched = Object.entries(globalMembers).find(([id, m]) => m.name === inputName);
+    const inputPhone = document.getElementById('phone').value.trim();
+    
+    // 優先以手機辨識，再以姓名辨識
+    const matched = Object.entries(globalMembers).find(([id, m]) => 
+      (inputPhone && m.phone === inputPhone) || (inputName && m.name === inputName)
+    );
+
     if (matched) {
-      document.getElementById('memberId').value = matched[0];
-      document.getElementById('level').value = matched[1].level;
+      const [id, data] = matched;
+      document.getElementById('memberId').value = id;
+      document.getElementById('name').value = data.name;
+      document.getElementById('phone').value = data.phone || "";
+      document.getElementById('level').value = data.level;
     } else {
       document.getElementById('memberId').value = "";
     }
@@ -125,10 +135,12 @@
   window.handleSave = async () => {
     const id = document.getElementById('memberId').value;
     const name = document.getElementById('name').value.trim();
+    const phone = document.getElementById('phone').value.trim();
     const level = document.getElementById('level').value;
     const amount = Number(document.getElementById('amount').value);
-    const note = document.getElementById('note').value || "無備註說明";
+    const note = document.getElementById('note').value || "無備註";
     const type = document.querySelector('input[name="transType"]:checked').value;
+    
     if (!name) return alert("請輸入姓名");
 
     const dateFull = new Date().toLocaleString('zh-TW', {hour12:false});
@@ -152,13 +164,13 @@
       newHistory.unshift({ date: dateShort, fullTime: dateFull, type: type==='deposit'?'儲值':'消費', amount, note, afterBalance: newBalance });
 
       await update(memberRef, {
-        name, level, totalDeposit: newDep, totalSpend: newSpe, balance: newBalance,
+        name, phone, level, totalDeposit: newDep, totalSpend: newSpe, balance: newBalance,
         history: newHistory.slice(0, 50), lastUpdate: Date.now()
       });
 
       document.getElementById('memberForm').reset();
       document.getElementById('memberId').value = '';
-      showStatus("✅ 資料已同步");
+      showStatus("💰 同步成功");
     } catch (e) { alert("儲存失敗"); }
   };
 
@@ -179,7 +191,8 @@
           <div style="margin-top:10px;"><span style="font-size:0.8rem; color:#888;">可用餘額</span><br><span class="balance-tag">$${m.balance || 0}</span></div>
         </div>
         <div class="drawer" id="drawer-${id}">
-          <div style="font-size:0.85rem; color:var(--gold-light); margin-bottom:12px; font-weight:bold; display:flex; align-items:center; gap:5px;">📜 歷史明細 (點擊查看詳情)</div>
+          <div style="font-size:0.85rem; color:var(--gold-light); margin-bottom:12px; font-weight:bold;">📱 會員手機：${m.phone || '未設定'}</div>
+          <div style="font-size:0.85rem; color:var(--text-main); margin-bottom:12px; font-weight:bold;">📜 歷史明細 (點擊查看詳情)</div>
           ${(m.history || []).map((h, i) => `
             <div class="history-item" onclick="toggleDetail('${id}-${i}', event)">
               <div class="history-item-top">
@@ -187,13 +200,13 @@
                 <span>$${h.amount} ➔ <b style="color:#fff;">$${h.afterBalance}</b></span>
               </div>
               <div class="detail-box" id="detail-${id}-${i}">
-                <div style="color:var(--gold-light); margin-bottom:3px;">🕒 完整時間：${h.fullTime}</div>
-                <div>📝 項目說明：${h.note}</div>
+                <div style="color:var(--gold-light); margin-bottom:3px;">🕒 時間：${h.fullTime}</div>
+                <div>📝 項目：${h.note}</div>
               </div>
             </div>
           `).join('')}
           <div class="btn-group">
-            <button class="btn-action" onclick="editMember('${id}','${m.name}','${m.level}')">選取</button>
+            <button class="btn-action" onclick="editMember('${id}')">選取</button>
             <button class="btn-action" onclick="deleteMember('${id}','${m.name}')" style="color:#ff4d4d">刪除</button>
           </div>
         </div>
@@ -202,35 +215,20 @@
     });
   });
 
-  // 控制一級抽屜 (會員卡片展開)
-  window.toggleDrawer = (id) => {
-    const d = document.getElementById(`drawer-${id}`);
-    d.classList.toggle('open');
-  };
+  window.toggleDrawer = (id) => document.getElementById(`drawer-${id}`).classList.toggle('open');
+  window.toggleDetail = (detailId, event) => { event.stopPropagation(); document.getElementById(`detail-${detailId}`).classList.toggle('show'); };
 
-  // 控制二級抽屜 (歷史明細點擊展開)
-  window.toggleDetail = (detailId, event) => {
-    event.stopPropagation(); // 防止觸發到父層的 toggleDrawer
-    const det = document.getElementById(`detail-${detailId}`);
-    det.classList.toggle('show');
-  };
-
-  window.editMember = (id, n, l) => {
+  window.editMember = (id) => {
+    const m = globalMembers[id];
     document.getElementById('memberId').value = id;
-    document.getElementById('name').value = n;
-    document.getElementById('level').value = l;
+    document.getElementById('name').value = m.name;
+    document.getElementById('phone').value = m.phone || "";
+    document.getElementById('level').value = m.level;
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  window.deleteMember = async (id, n) => {
-    if (confirm(`確定刪除會員 ${n} 嗎？`)) await remove(ref(db, 'members/' + id));
-  };
-
-  function showStatus(msg) {
-    const s = document.getElementById('status');
-    s.innerText = msg; s.style.display = 'block';
-    setTimeout(() => s.style.display = 'none', 3000);
-  }
+  window.deleteMember = async (id, n) => { if (confirm(`確定刪除 ${n}？`)) await remove(ref(db, 'members/' + id)); };
+  function showStatus(msg) { const s = document.getElementById('status'); s.innerText = msg; s.style.display = 'block'; setTimeout(() => s.style.display = 'none', 3000); }
 </script>
 </body>
 </html>
